@@ -1,0 +1,158 @@
+export const FAMILY_ORDER = ['All', 'Whiskey', 'Wine', 'Spirit', 'Cocktail', 'Beer', 'RTD', 'Mocktail', 'Soft Drink', 'Water'];
+
+const CONFIDENCE_RANK = { High: 0, Medium: 1, Low: 2 };
+
+export function normalizeCatalog(payload) {
+  const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+  return entries.map((entry, index) => enrichEntry(entry, index));
+}
+
+export function enrichEntry(entry, index = 0) {
+  const tastingTerms = [
+    ...(entry.tasting?.aroma || []),
+    ...(entry.tasting?.flavor || []),
+    entry.tasting?.body,
+    entry.tasting?.finish,
+  ];
+
+  const pairingTerms = Object.values(entry.pairings || {}).flatMap((values) => values || []);
+
+  const searchable = [
+    entry.name,
+    entry.family,
+    entry.category,
+    entry.subtype,
+    entry.varietal,
+    entry.producer,
+    entry.origin?.country,
+    entry.origin?.region,
+    entry.origin?.display,
+    ...(entry.tags || []),
+    ...(entry.whiskey?.displayTags || []),
+    ...(entry.whiskey?.styleTerms || []),
+    ...(entry.research?.caveats || []),
+    ...(entry.signatureTraits || []),
+    ...tastingTerms,
+    ...pairingTerms,
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  const preview = entry.tasting?.aroma?.slice(0, 3).join(' · ')
+    || entry.tasting?.flavor?.slice(0, 3).join(' · ')
+    || entry.signatureTraits?.[0]
+    || 'Tasting profile available';
+
+  return {
+    ...entry,
+    _index: index,
+    _search: searchable,
+    _preview: preview,
+    _hasPairings: pairingTerms.length > 0,
+    _hasCaveat: Boolean(entry.research?.caveats?.length || (entry.research?.ambiguityStatus && entry.research.ambiguityStatus !== 'Clear')),
+  };
+}
+
+export function deriveFacets(entries) {
+  const familyCounts = { All: entries.length };
+  const categoryCounts = new Map();
+  const producers = new Set();
+
+  for (const entry of entries) {
+    familyCounts[entry.family] = (familyCounts[entry.family] || 0) + 1;
+    const key = `${entry.family}::${entry.category}`;
+    categoryCounts.set(key, (categoryCounts.get(key) || 0) + 1);
+    if (entry.producer) producers.add(entry.producer);
+  }
+
+  return { familyCounts, categoryCounts, producerCount: producers.size };
+}
+
+export function getCategories(entries, family = 'All') {
+  const counts = new Map();
+  for (const entry of entries) {
+    if (family !== 'All' && entry.family !== family) continue;
+    counts.set(entry.category, (counts.get(entry.category) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, count]) => ({ name, count }));
+}
+
+export function filterCatalog(entries, state) {
+  const terms = tokenize(state.query);
+  return entries.filter((entry) => {
+    if (state.scope === 'favorites' && !state.favorites.has(entry.id)) return false;
+    if (state.scope === 'recent' && !state.recent.includes(entry.id)) return false;
+    if (state.family !== 'All' && entry.family !== state.family) return false;
+    if (state.category !== 'All' && entry.category !== state.category) return false;
+    if (state.confidence !== 'All' && entry.research?.confidence !== state.confidence) return false;
+    if (state.pairingsOnly && !entry._hasPairings) return false;
+    if (state.caveatsOnly && !entry._hasCaveat) return false;
+    if (terms.length && !terms.every((term) => entry._search.includes(term))) return false;
+    return true;
+  });
+}
+
+export function sortCatalog(entries, sort) {
+  const result = [...entries];
+  switch (sort) {
+    case 'name-desc':
+      return result.sort((a, b) => b.name.localeCompare(a.name));
+    case 'family':
+      return result.sort((a, b) => {
+        const familyDiff = FAMILY_ORDER.indexOf(a.family) - FAMILY_ORDER.indexOf(b.family);
+        return familyDiff || a.name.localeCompare(b.name);
+      });
+    case 'confidence':
+      return result.sort((a, b) => {
+        const confidenceDiff = (CONFIDENCE_RANK[a.research?.confidence] ?? 9) - (CONFIDENCE_RANK[b.research?.confidence] ?? 9);
+        return confidenceDiff || a.name.localeCompare(b.name);
+      });
+    case 'original':
+      return result.sort((a, b) => a._index - b._index);
+    case 'name':
+    default:
+      return result.sort((a, b) => a.name.localeCompare(b.name));
+  }
+}
+
+export function getRelated(entries, entry, limit = 6) {
+  if (!entry) return [];
+  const scored = entries
+    .filter((candidate) => candidate.id !== entry.id)
+    .map((candidate) => ({ candidate, score: relatedScore(entry, candidate) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.candidate.name.localeCompare(b.candidate.name));
+  return scored.slice(0, limit).map((item) => item.candidate);
+}
+
+function relatedScore(a, b) {
+  let score = 0;
+  if (a.family === b.family) score += 6;
+  if (a.category === b.category) score += 7;
+  if (a.subtype && b.subtype && a.subtype.toLowerCase() === b.subtype.toLowerCase()) score += 4;
+  if (a.producer && b.producer && a.producer === b.producer) score += 5;
+
+  const aTerms = new Set([...(a.tags || []), ...(a.whiskey?.styleTerms || []), ...(a.tasting?.flavor || [])].map(lower));
+  for (const term of [...(b.tags || []), ...(b.whiskey?.styleTerms || []), ...(b.tasting?.flavor || [])]) {
+    if (aTerms.has(lower(term))) score += 1;
+  }
+  return score;
+}
+
+export function catalogStats(entries) {
+  const families = new Set(entries.map((entry) => entry.family));
+  const highConfidence = entries.filter((entry) => entry.research?.confidence === 'High').length;
+  return {
+    total: entries.length,
+    families: families.size,
+    highConfidencePct: entries.length ? Math.round((highConfidence / entries.length) * 100) : 0,
+  };
+}
+
+function tokenize(value = '') {
+  return value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+}
+
+function lower(value) {
+  return String(value || '').toLowerCase();
+}
