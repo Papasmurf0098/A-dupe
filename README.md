@@ -1,78 +1,56 @@
-# Nightcap Library
+# Voodoo Drink Library II
 
-Nightcap Library is a tasting-first reference app for browsing a local drink-profile database. It is designed to feel like opening a premium physical archive: categories behave like filing tabs, profiles slide forward without losing the user's place, and research context stays available without competing with the tasting experience.
+A drink reference for Voodoo Bayou, Palm Beach Gardens: tasting profiles, qualified strength references, and pairings with named dishes from the location-linked menu.
 
-The project is deliberately **not** a store, recipe index, review feed, or image-led catalog. The product hierarchy is:
+## September 2026 revision
 
-1. find the drink quickly;
-2. understand what it tastes like;
-3. understand what it pairs with and where it comes from;
-4. expose accuracy, ambiguity, and sourcing when the user wants deeper context.
+- 353 stored records, 352 distinct profiles after one duplicate is mapped to its canonical entry.
+- Every record has a dated research review, scoped source links, and strength qualifications.
+- 15 records added from the retrieved menu; these are additions to this catalog, not confirmed new restaurant offerings.
+- 682 pairing suggestions across 341 visible profiles and 36 named dishes. Eleven unresolved bottles/flights remain unpaired.
+- Dish-first discovery, ingredient and accent-insensitive search, flavor filters, and menu-status filters.
+- Royal-purple textured surfaces, gold and emerald accents, glass filing tabs, real illustrative photography, and front-to-back profile motion.
+- Saved profiles, recent history, deep links, sharing, random discovery, and compact/comfortable views.
 
-## Remastered experience
+Read [the research audit](RESEARCH_AUDIT.md) for verification limits and corrections. Read [photo credits](ASSET_CREDITS.md) for sources and licenses. The photography does not depict the restaurant or certify individual drinks.
 
-The v2 interface replaces the original dashboard/grid flow with a persistent library workspace:
+## Run and validate
 
-- filing-cabinet family navigation instead of generic filter chips;
-- instant local search across names, producers, origins, tasting notes, styles, tags, and pairings;
-- category, confidence, pairing, and caveat filtering;
-- comfortable and compact catalog densities;
-- no page-number pagination — results extend in-place so browsing position stays coherent;
-- full profile sheets that slide over the library rather than navigating away from it;
-- saved profiles and recently viewed history stored locally on the device;
-- related-profile discovery and random discovery;
-- shareable URL state for filters and individual drink profiles;
-- keyboard shortcuts (`/` to search, `R` for random, `Esc` to close a profile);
-- offline shell/catalog caching through a small service worker;
-- responsive behavior optimized for phone, tablet, and desktop.
+No package installation or build is required. Serve the repository root over HTTP; opening `index.html` directly with `file://` will not support the data fetches.
 
-## Architecture choice
-
-The remaster keeps the application dependency-free and uses native ES modules rather than adding React/Vite.
-
-That is intentional. The catalog already has a strong normalized JSON model, GitHub Pages is the deployment target, and the app does not need server rendering or a large component framework. Native modules provide separation of concerns while preserving zero-build deployment, fast startup, and easy maintenance.
-
-### Front-end modules
-
-- `js/app.js` — application state, routing, event handling, view rendering, profile interactions.
-- `js/catalog.js` — normalization, faceting, filtering, sorting, catalog statistics, and related-profile scoring.
-- `js/storage.js` — local favorites, recent history, and display preferences.
-- `styles.css` — responsive design system and motion layer.
-- `sw.js` — offline shell/catalog cache.
-
-### Data
-
-`data/drinks.json` remains the source of truth. The UI does not rewrite or flatten the research model.
-
-Each profile can preserve:
-
-- family, category, subtype, and varietal;
-- producer and origin;
-- exact or caveated ABV/proof data;
-- aroma, flavor, body, and finish;
-- food pairings and signature traits;
-- whiskey-specific tags and search terminology;
-- research confidence, ambiguity, conflicts, resolution, and caveats;
-- normalization provenance through `sourceRecord`.
-
-## Local development
-
-Because the app loads local JSON with `fetch()`, serve the repository through HTTP:
-
-```bash
+```sh
 python -m http.server 4173
 ```
 
-Then open `http://localhost:4173`.
+For dependency-free tests, use Node.js 22.7+ (validated with Node.js 24):
 
-No package install or build step is required.
+```sh
+node --test tests/*.test.mjs
+node --check js/app.js
+node --check js/catalog.js
+node --check js/storage.js
+node --check sw.js
+git diff --check
+```
 
-## GitHub Pages
+Tests cover data invariants, identity redirects, pairing references, qualified ABV, search and filtering, storage recovery, and service-worker behavior in a simulated environment. They do not substitute for browser layout, assistive-technology, touch, or installed-PWA testing. Those manual checks have not been performed in this revision.
 
-Publish from the repository root of the default branch. All application assets use relative paths so the site works correctly from a GitHub Pages project subdirectory.
+## Files
 
-## Product principle
+- `data/drinks.json`: active catalog and archived prior values under `sourceRecord`.
+- `drinks.json`: compatibility copy; keep byte-identical to `data/drinks.json`.
+- `data/food.json`: named dishes, menu components, service labels, and source scope.
+- `js/catalog.js`: duplicate normalization, search, filters, sorting, and related profiles.
+- `js/app.js`: rendering, route state, interaction handling, profile modal, and food discovery.
+- `js/storage.js`: device-local favorites, recent history, and preferences. Existing `nightcap:v2:*` keys are intentionally retained to preserve user data.
+- `styles.css`: responsive theme, filing-tab motion, and reduced-motion support.
+- `sw.js`: network-first app assets with offline fallback; cache cleanup is limited to this app's registration scope.
+- `tests/`: dependency-free regression tests.
 
-**Tasting first. Context second. Provenance never discarded.**
+The old DOCX and parser are preserved as historical inputs. **Do not regenerate the current catalog with the legacy parser**: doing so would overwrite the reviewed profiles and pairings. Previous narrative values are provenance, not current evidence, and are not displayed as active tasting notes.
 
-The visual shell can continue to evolve — including future photography or richer atmospheric scenes — without changing the normalized drink data or research methodology.
+## Deployment
+
+GitHub Pages can serve the repository root without a build step. Relative asset paths support the project subdirectory. This revision is delivered on a review branch; creating a pull request does not merge or deploy it.
+
+Keyboard: `/` focuses search, `R` opens a random profile, and `Escape` closes an open profile. The modal traps keyboard focus and makes the background inert. Reduced-motion preferences disable animated transitions.

@@ -1,10 +1,24 @@
 export const FAMILY_ORDER = ['All', 'Whiskey', 'Wine', 'Spirit', 'Cocktail', 'Beer', 'RTD', 'Mocktail', 'Soft Drink', 'Water'];
+export const FLAVOR_FILTERS = {
+  Citrus: /citrus|lemon|lime|orange|grapefruit|yuzu|bergamot|tangerine/,
+  Fruit: /fruit|berry|berries|cherry|cherries|apple|pear|plum|peach|apricot|pineapple|mango|banana|guava|raisin|grape|melon|cassis/,
+  Herbal: /herb|mint|basil|rosemary|thyme|sage|juniper|\bpine\b|fennel|anise|licorice|\bbay\b|\bfir\b/,
+  Smoke: /smok|peat|bonfire/,
+  Spice: /spice|pepper|cinnamon|clove|ginger|nutmeg|cardamom|chile/,
+  Roast: /cocoa|chocolate|coffee|espresso|mocha|toast/,
+  Creamy: /cream|milkshake|silky|velvety|\bbutter\b/,
+};
 
 const CONFIDENCE_RANK = { High: 0, Medium: 1, Low: 2 };
 
 export function normalizeCatalog(payload) {
   const entries = Array.isArray(payload?.entries) ? payload.entries : [];
-  return entries.map((entry, index) => enrichEntry(entry, index));
+  const duplicates = entries.filter((entry) => entry.duplicateOf);
+  return entries.filter((entry) => !entry.duplicateOf).map((entry, index) => enrichEntry({
+    ...entry,
+    legacyIds: duplicates.filter((old) => old.duplicateOf === entry.id).map((old) => old.id),
+    aliases: [...(entry.aliases || []), ...duplicates.filter((old) => old.duplicateOf === entry.id).map((old) => old.name)],
+  }, index));
 }
 
 export function enrichEntry(entry, index = 0) {
@@ -15,15 +29,19 @@ export function enrichEntry(entry, index = 0) {
     entry.tasting?.finish,
   ];
 
-  const pairingTerms = Object.values(entry.pairings || {}).flatMap((values) => values || []);
+  const pairings = entry.pairings?.restaurant || [];
+  const pairingTerms = pairings.flatMap((pairing) => [pairing.name, pairing.reason]);
 
   const searchable = [
     entry.name,
+    ...(entry.aliases || []),
+    entry.menu?.displayName,
     entry.family,
     entry.category,
     entry.subtype,
     entry.varietal,
     entry.producer,
+    ...(entry.ingredients || []),
     entry.origin?.country,
     entry.origin?.region,
     entry.origin?.display,
@@ -34,7 +52,7 @@ export function enrichEntry(entry, index = 0) {
     ...(entry.signatureTraits || []),
     ...tastingTerms,
     ...pairingTerms,
-  ].filter(Boolean).join(' ').toLowerCase();
+  ].filter(Boolean).join(' ');
 
   const preview = entry.tasting?.aroma?.slice(0, 3).join(' · ')
     || entry.tasting?.flavor?.slice(0, 3).join(' · ')
@@ -44,9 +62,10 @@ export function enrichEntry(entry, index = 0) {
   return {
     ...entry,
     _index: index,
-    _search: searchable,
+    _search: normalizeText(searchable),
     _preview: preview,
     _hasPairings: pairingTerms.length > 0,
+    _flavors: Object.entries(FLAVOR_FILTERS).filter(([, pattern]) => pattern.test(normalizeText([...(entry.tasting?.aroma || []), ...(entry.tasting?.flavor || [])].join(' ')))).map(([name]) => name),
     _hasCaveat: Boolean(entry.research?.caveats?.length || (entry.research?.ambiguityStatus && entry.research.ambiguityStatus !== 'Clear')),
   };
 }
@@ -87,6 +106,9 @@ export function filterCatalog(entries, state) {
     if (state.confidence !== 'All' && entry.research?.confidence !== state.confidence) return false;
     if (state.pairingsOnly && !entry._hasPairings) return false;
     if (state.caveatsOnly && !entry._hasCaveat) return false;
+    if (state.dish && !entry.pairings?.restaurant?.some((pairing) => pairing.dishId === state.dish)) return false;
+    if (state.flavor && !entry._flavors.includes(state.flavor)) return false;
+    if (state.menu && entry.menu?.status !== state.menu) return false;
     if (terms.length && !terms.every((term) => entry._search.includes(term))) return false;
     return true;
   });
@@ -150,7 +172,12 @@ export function catalogStats(entries) {
 }
 
 function tokenize(value = '') {
-  return value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  return normalizeText(value).trim().split(/\s+/).filter(Boolean);
+}
+
+export function normalizeText(value = '') {
+  return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[’‘'`]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
 function lower(value) {

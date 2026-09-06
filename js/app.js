@@ -1,5 +1,6 @@
 import {
   FAMILY_ORDER,
+  FLAVOR_FILTERS,
   catalogStats,
   deriveFacets,
   filterCatalog,
@@ -33,6 +34,10 @@ const state = {
   density: 'comfortable',
   visible: PAGE_STEP,
   selectedId: null,
+  dish: '',
+  flavor: '',
+  menu: '',
+  food: [],
   favorites: loadFavorites(),
   recent: loadRecent(),
   scrollY: 0,
@@ -44,6 +49,7 @@ state.density = preferences.density;
 
 let facets = null;
 let elements = {};
+let returnFocus = null;
 
 boot();
 
@@ -52,6 +58,13 @@ async function boot() {
     const response = await fetch('./data/drinks.json');
     if (!response.ok) throw new Error(`Catalog request failed (${response.status})`);
     state.entries = normalizeCatalog(await response.json());
+    const foodResponse = await fetch('./data/food.json');
+    if (!foodResponse.ok) throw new Error('Food menu unavailable');
+    state.food = (await foodResponse.json()).dishes;
+    const canonicalId = (id) => state.entries.find((entry) => entry.id === id || entry.legacyIds.includes(id))?.id;
+    state.favorites = new Set([...state.favorites].map(canonicalId).filter(Boolean));
+    state.recent = [...new Set(state.recent.map(canonicalId).filter(Boolean))];
+    saveFavorites(state.favorites);
     facets = deriveFacets(state.entries);
     hydrateFromUrl();
     renderShell();
@@ -62,7 +75,7 @@ async function boot() {
     console.error(error);
     app.innerHTML = `
       <section class="fatal-state">
-        <span class="fatal-state__mark">N</span>
+        <span class="fatal-state__mark">V</span>
         <h1>Library unavailable</h1>
         <p>${escapeHtml(error.message)}</p>
         <button class="button button--primary" onclick="location.reload()">Try again</button>
@@ -74,14 +87,14 @@ function renderShell() {
   const stats = catalogStats(state.entries);
   app.innerHTML = `
     <header class="masthead">
-      <a class="brand" href="${escapeAttribute(window.location.pathname)}" data-action="reset" aria-label="Nightcap Library home">
-        <span class="brand__monogram">N</span>
-        <span class="brand__type"><strong>Nightcap</strong><small>Library</small></span>
+      <a class="brand" href="${escapeAttribute(window.location.pathname)}" data-action="reset" aria-label="Voodoo Drink Library home">
+        <span class="brand__monogram">V</span>
+        <span class="brand__type"><strong>Voodoo</strong><small>Drink Library II</small></span>
       </a>
 
       <label class="command-search" aria-label="Search the drink library">
         <span class="command-search__icon">${icon('search')}</span>
-        <input id="searchInput" type="search" placeholder="Bottle, style, producer, flavor…" autocomplete="off" />
+        <input id="searchInput" type="search" placeholder="Drink, flavor, or dish…" autocomplete="off" />
         <kbd>/</kbd>
       </label>
 
@@ -109,7 +122,7 @@ function renderShell() {
         <header class="stage-header">
           <div>
             <p id="stageKicker" class="stage-kicker">Full collection</p>
-            <h1 id="stageTitle">The Library</h1>
+            <h1 id="stageTitle">The Bar</h1>
             <p id="stageSummary" class="stage-summary"></p>
           </div>
           <div class="stage-header__tools">
@@ -124,7 +137,13 @@ function renderShell() {
           <button class="view-chip" data-scope="recent">${icon('clock')} Recent</button>
         </div>
 
-        <section id="filterDrawer" class="filter-drawer" aria-hidden="true">
+        <section class="pairing-finder" aria-label="Find a drink">
+          <div><label for="dishSelect">Pair with</label><select id="dishSelect" class="select-control"><option value="">Any dish</option>${state.food.map((dish) => `<option value="${escapeAttribute(dish.id)}">${escapeHtml(dish.name)}${dish.service === 'Brunch' ? ' · Brunch' : ''}</option>`).join('')}</select></div>
+          <div><label for="flavorSelect">Flavor</label><select id="flavorSelect" class="select-control"><option value="">Any profile</option>${Object.keys(FLAVOR_FILTERS).map((flavor) => `<option>${flavor}</option>`).join('')}</select></div>
+          <a class="menu-link" href="https://voodoobayou.com/menu/" target="_blank" rel="noopener noreferrer">Voodoo Bayou menu ↗</a>
+        </section>
+
+        <section id="filterDrawer" class="filter-drawer" aria-hidden="true" inert>
           <div class="filter-group filter-group--wide">
             <span class="filter-label">Category</span>
             <div id="categoryTabs" class="category-tabs"></div>
@@ -152,6 +171,7 @@ function renderShell() {
             <label class="switch-row"><input id="pairingsOnly" type="checkbox" /> <span>Has pairings</span></label>
             <label class="switch-row"><input id="caveatsOnly" type="checkbox" /> <span>Has caveats</span></label>
           </div>
+          <div class="filter-group"><label class="filter-label" for="menuSelect">Menu status</label><select id="menuSelect" class="select-control"><option value="">All records</option><option value="listed">Menu listed</option><option value="not-found">Not found on menu</option></select></div>
           <div class="filter-group filter-group--density">
             <span class="filter-label">Density</span>
             <div class="segmented-control">
@@ -163,16 +183,17 @@ function renderShell() {
         </section>
 
         <div class="result-bar">
-          <p id="resultCount"></p>
+          <p id="resultCount" role="status" aria-live="polite"></p>
           <div id="activeFilters" class="active-filters"></div>
         </div>
 
         <section id="catalogDeck" class="catalog-deck" aria-label="Drink profiles"></section>
         <div id="loadMoreWrap" class="load-more-wrap"></div>
+        <footer class="library-footer"><span>Location-linked menu checked September 6, 2026</span><a href="RESEARCH_AUDIT.md">Menu scope</a><a href="https://voodoobayou.com/palmbeachgardens/" target="_blank" rel="noopener noreferrer">Palm Beach Gardens ↗</a><a href="ASSET_CREDITS.md">Photo credits</a></footer>
       </section>
     </main>
 
-    <div id="profileLayer" class="profile-layer" aria-hidden="true">
+    <div id="profileLayer" class="profile-layer" aria-hidden="true" inert>
       <button class="profile-scrim" data-action="close-profile" tabindex="-1" aria-label="Close profile"></button>
       <article id="profilePanel" class="profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileTitle"></article>
     </div>
@@ -182,6 +203,9 @@ function renderShell() {
 
   elements = {
     searchInput: document.querySelector('#searchInput'),
+    dishSelect: document.querySelector('#dishSelect'),
+    flavorSelect: document.querySelector('#flavorSelect'),
+    menuSelect: document.querySelector('#menuSelect'),
     familyTabs: document.querySelector('#familyTabs'),
     categoryTabs: document.querySelector('#categoryTabs'),
     confidenceSelect: document.querySelector('#confidenceSelect'),
@@ -283,6 +307,7 @@ function handleClick(event) {
     const open = !elements.filterDrawer.classList.contains('is-open');
     elements.filterDrawer.classList.toggle('is-open', open);
     elements.filterDrawer.setAttribute('aria-hidden', String(!open));
+    elements.filterDrawer.inert = !open;
     elements.filterToggle.setAttribute('aria-expanded', String(open));
   } else if (action === 'clear-filters') {
     clearFilters();
@@ -293,11 +318,21 @@ function handleClick(event) {
     closeProfile();
   } else if (action === 'share-profile') {
     shareCurrentProfile();
+  } else if (action === 'pair-dish') {
+    state.dish = actionTarget.dataset.dish;
+    state.family = 'All'; state.category = 'All'; state.scope = 'all'; state.query = ''; state.flavor = ''; state.menu = ''; state.confidence = 'All'; state.pairingsOnly = false; state.caveatsOnly = false;
+    closeProfile(); state.visible = PAGE_STEP; syncUrl({ replace: true }); renderAll();
   }
 }
 
 function handleChange(event) {
-  if (event.target === elements.confidenceSelect) {
+  if (event.target === elements.dishSelect) {
+    state.dish = event.target.value;
+  } else if (event.target === elements.flavorSelect) {
+    state.flavor = event.target.value;
+  } else if (event.target === elements.menuSelect) {
+    state.menu = event.target.value;
+  } else if (event.target === elements.confidenceSelect) {
     state.confidence = event.target.value;
   } else if (event.target === elements.sortSelect) {
     state.sort = event.target.value;
@@ -315,13 +350,19 @@ function handleChange(event) {
 }
 
 function handleKeydown(event) {
+  if (state.selectedId && event.key === 'Tab') {
+    const focusable = [...elements.profilePanel.querySelectorAll('button, a[href], summary, input, select, [tabindex="0"]')].filter((node) => node.getClientRects().length);
+    const first = focusable[0], last = focusable.at(-1);
+    if (event.shiftKey && (document.activeElement === first || !elements.profilePanel.contains(document.activeElement))) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || !elements.profilePanel.contains(document.activeElement))) { event.preventDefault(); first?.focus(); }
+  }
   const keyboardCard = event.target.closest?.('[data-drink-id]');
   if (keyboardCard && (event.key === 'Enter' || event.key === ' ') && !event.target.closest('button')) {
     event.preventDefault();
     openProfile(keyboardCard.dataset.drinkId);
     return;
   }
-  if (event.key === '/' && !isTypingTarget(event.target)) {
+  if (event.key === '/' && !isTypingTarget(event.target) && !state.selectedId) {
     event.preventDefault();
     elements.searchInput.focus();
     elements.searchInput.select();
@@ -336,6 +377,9 @@ function handleKeydown(event) {
 
 function renderAll({ fromHistory = false } = {}) {
   elements.searchInput.value = state.query;
+  elements.dishSelect.value = state.dish;
+  elements.flavorSelect.value = state.flavor;
+  elements.menuSelect.value = state.menu;
   elements.confidenceSelect.value = state.confidence;
   elements.sortSelect.value = state.sort;
   elements.pairingsOnly.checked = state.pairingsOnly;
@@ -393,14 +437,14 @@ function renderStageHeader() {
   const filtered = getFiltered();
   const scopeLabels = { all: 'Full collection', favorites: 'Saved collection', recent: 'Recently viewed' };
   elements.stageKicker.textContent = scopeLabels[state.scope] || 'Collection';
-  elements.stageTitle.textContent = state.family === 'All' ? 'The Library' : state.family;
+  elements.stageTitle.textContent = state.family === 'All' ? 'The Bar' : state.family === 'Spirit' ? 'Spirits' : state.family === 'Cocktail' ? 'Cocktails' : state.family;
 
   const descriptors = [];
   if (state.category !== 'All') descriptors.push(state.category);
   if (state.query) descriptors.push(`“${state.query}”`);
   elements.stageSummary.textContent = descriptors.length
     ? `${filtered.length} matching profile${filtered.length === 1 ? '' : 's'} · ${descriptors.join(' · ')}`
-    : `${filtered.length} profile${filtered.length === 1 ? '' : 's'} · tasting notes, pairings, origin and source context`;
+    : 'Voodoo Bayou · Palm Beach Gardens';
 }
 
 function renderScopeTabs() {
@@ -418,6 +462,9 @@ function renderActiveFilters() {
   if (state.confidence !== 'All') filters.push(['Confidence', state.confidence]);
   if (state.pairingsOnly) filters.push(['Pairings', 'Required']);
   if (state.caveatsOnly) filters.push(['Caveats', 'Present']);
+  if (state.dish) filters.push(['Dish', state.food.find((dish) => dish.id === state.dish)?.name || state.dish]);
+  if (state.flavor) filters.push(['Flavor', state.flavor]);
+  if (state.menu) filters.push(['Menu', state.menu === 'listed' ? 'Listed' : 'Not found']);
 
   elements.activeFilters.innerHTML = filters.map(([label, value]) => `
     <span class="active-filter"><small>${escapeHtml(label)}</small>${escapeHtml(value)}</span>
@@ -438,7 +485,7 @@ function renderResults() {
   elements.catalogDeck.innerHTML = visible.map((entry, index) => cardMarkup(entry, index)).join('');
   elements.loadMoreWrap.innerHTML = results.length > visible.length
     ? `<button class="load-more" data-action="load-more">Show ${Math.min(PAGE_STEP, results.length - visible.length)} more <span>${visible.length} / ${results.length}</span></button>`
-    : `<div class="end-mark"><span>N</span><small>End of selection</small></div>`;
+    : `<div class="end-mark"><span>V</span><small>End of selection</small></div>`;
 }
 
 function cardMarkup(entry, index) {
@@ -447,7 +494,7 @@ function cardMarkup(entry, index) {
   const saved = state.favorites.has(entry.id);
   const subtitle = [entry.subtype || entry.varietal, entry.producer].filter(Boolean).join(' · ');
   return `
-    <article class="catalog-card" data-drink-id="${escapeAttribute(entry.id)}" tabindex="0" style="--card-order:${index % 12}">
+    <article class="catalog-card" data-drink-id="${escapeAttribute(entry.id)}" tabindex="0" aria-label="Open ${escapeAttribute(entry.name)}" style="--card-order:${index % 8}">
       <div class="catalog-card__edge" aria-hidden="true"></div>
       <div class="catalog-card__topline">
         <span class="catalog-card__category">${escapeHtml(entry.category)}</span>
@@ -458,6 +505,7 @@ function cardMarkup(entry, index) {
         <h2>${escapeHtml(entry.name)}</h2>
         ${subtitle ? `<p class="catalog-card__meta">${escapeHtml(subtitle)}</p>` : ''}
         <p class="catalog-card__preview">${escapeHtml(entry._preview)}</p>
+        ${entry.pairings?.restaurant?.length ? `<p class="catalog-card__pairing">With ${escapeHtml(entry.pairings.restaurant[0].name)}</p>` : ''}
       </div>
       <footer class="catalog-card__footer">
         <div class="micro-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</div>
@@ -474,7 +522,7 @@ function renderDensityControl() {
 
 function openProfile(id) {
   if (!state.entries.some((entry) => entry.id === id)) return;
-  state.scrollY = window.scrollY;
+  if (!state.selectedId) { state.scrollY = window.scrollY; returnFocus = document.activeElement; }
   state.selectedId = id;
   state.recent = pushRecent(state.recent, id);
   syncUrl({ push: true });
@@ -530,7 +578,6 @@ function renderProfile(id, { fromHistory = false } = {}) {
         <main class="profile-main">
           ${tastingMarkup(entry)}
           ${pairingsMarkup(entry)}
-          ${signatureMarkup(entry)}
           ${relatedMarkup(related)}
         </main>
 
@@ -541,6 +588,7 @@ function renderProfile(id, { fromHistory = false } = {}) {
             <div class="research-panel__body">
               <div class="research-status">${researchBadgeMarkup(entry)}</div>
               ${sourceFields.map(([label, value]) => `<div class="research-row"><small>${escapeHtml(label)}</small><p>${escapeHtml(value)}</p></div>`).join('')}
+              <ul class="source-links">${(entry.research?.sources || []).filter((source) => safeUrl(source.url)).map((source) => `<li><a href="${escapeAttribute(safeUrl(source.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.title)} ↗</a><p>${escapeHtml(source.supports)}</p><small>${escapeHtml(source.type)} · ${escapeHtml(source.accessed)}</small></li>`).join('')}</ul>
             </div>
           </details>
         </aside>
@@ -550,6 +598,9 @@ function renderProfile(id, { fromHistory = false } = {}) {
 
   elements.profileLayer.classList.add('is-open');
   elements.profileLayer.setAttribute('aria-hidden', 'false');
+  elements.profileLayer.inert = false;
+  document.querySelector('.workspace').inert = true;
+  document.querySelector('.masthead').inert = true;
   document.body.classList.add('profile-open');
   document.body.dataset.family = entry.family || state.family;
   requestAnimationFrame(() => elements.profilePanel.querySelector('.profile-back')?.focus({ preventScroll: true }));
@@ -566,9 +617,12 @@ function closeProfile() {
 function hideProfile({ restoreScroll = true } = {}) {
   elements.profileLayer?.classList.remove('is-open');
   elements.profileLayer?.setAttribute('aria-hidden', 'true');
+  if (elements.profileLayer) elements.profileLayer.inert = true;
+  document.querySelector('.workspace').inert = false;
+  document.querySelector('.masthead').inert = false;
   document.body.classList.remove('profile-open');
   document.body.dataset.family = state.family;
-  if (restoreScroll) requestAnimationFrame(() => window.scrollTo({ top: state.scrollY, behavior: 'auto' }));
+  if (restoreScroll) requestAnimationFrame(() => { window.scrollTo({ top: state.scrollY, behavior: 'auto' }); (returnFocus?.isConnected ? returnFocus : elements.searchInput)?.focus({ preventScroll: true }); });
 }
 
 function setFamily(family) {
@@ -592,6 +646,7 @@ function clearFilters() {
   state.confidence = 'All';
   state.pairingsOnly = false;
   state.caveatsOnly = false;
+  state.dish = ''; state.flavor = ''; state.menu = '';
   state.visible = PAGE_STEP;
   elements.searchInput.value = '';
   syncUrl({ replace: true });
@@ -602,6 +657,7 @@ function resetState() {
   Object.assign(state, {
     query: '', family: 'All', category: 'All', confidence: 'All',
     pairingsOnly: false, caveatsOnly: false, scope: 'all', visible: PAGE_STEP, selectedId: null,
+    dish: '', flavor: '', menu: '',
   });
   syncUrl({ replace: true });
   renderAll();
@@ -656,6 +712,11 @@ function hydrateFromUrl() {
   state.caveatsOnly = params.get('caveats') === '1';
   state.sort = ['name', 'name-desc', 'family', 'confidence', 'original'].includes(params.get('sort')) ? params.get('sort') : state.sort;
   state.selectedId = params.get('drink');
+  const legacyMatch = state.entries.find((entry) => entry.legacyIds.includes(state.selectedId));
+  if (legacyMatch) state.selectedId = legacyMatch.id;
+  state.dish = state.food.some((dish) => dish.id === params.get('dish')) ? params.get('dish') : '';
+  state.flavor = Object.hasOwn(FLAVOR_FILTERS, params.get('flavor')) ? params.get('flavor') : '';
+  state.menu = ['listed', 'not-found'].includes(params.get('menu')) ? params.get('menu') : '';
   state.visible = PAGE_STEP;
 }
 
@@ -670,6 +731,9 @@ function syncUrl({ push = false, replace = false } = {}) {
   if (state.caveatsOnly) params.set('caveats', '1');
   if (state.sort !== 'name') params.set('sort', state.sort);
   if (state.selectedId) params.set('drink', state.selectedId);
+  if (state.dish) params.set('dish', state.dish);
+  if (state.flavor) params.set('flavor', state.flavor);
+  if (state.menu) params.set('menu', state.menu);
   const url = `${window.location.pathname}${params.size ? `?${params}` : ''}`;
   if (push) history.pushState({}, '', url);
   else if (replace) history.replaceState({}, '', url);
@@ -682,7 +746,7 @@ async function shareCurrentProfile() {
   const url = window.location.href;
   try {
     if (navigator.share) {
-      await navigator.share({ title: entry.name, text: `${entry.name} — Nightcap Library`, url });
+      await navigator.share({ title: entry.name, text: `${entry.name} — Voodoo Drink Library`, url });
     } else {
       await navigator.clipboard.writeText(url);
       showToast('Profile link copied');
@@ -713,25 +777,18 @@ function noteGroup(label, notes) {
 }
 
 function pairingsMarkup(entry) {
-  const groups = Object.entries(entry.pairings || {}).filter(([, values]) => values?.length);
-  if (!groups.length) return '';
+  const pairs = entry.pairings?.restaurant || [];
   return `
     <section class="content-section">
-      <div class="section-heading"><span>02</span><h2>Pairings</h2></div>
-      <div class="pairing-grid">${groups.map(([key, values]) => `
+      <div class="section-heading"><span>02</span><h2>From the kitchen</h2></div>
+      <p class="pairing-note">${pairs.length ? 'Suggested Voodoo Bayou pairings' : escapeHtml(entry.pairingReview?.note || 'Pairing pending bottle confirmation.')}${pairs.length && entry.pairingReview?.conditional ? ' · conditional on the reference bottle' : ''}</p>
+      <div class="pairing-grid">${pairs.map((pair) => `
         <div class="pairing-group">
-          <small>${escapeHtml(displayKey(key))}</small>
-          <p>${values.map(escapeHtml).join(' · ')}</p>
+          <h3>${escapeHtml(pair.name)}</h3>
+          <p>${escapeHtml(pair.reason)}</p>
+          <button class="pairing-explore" data-action="pair-dish" data-dish="${escapeAttribute(pair.dishId)}">Other drinks for this dish</button>
         </div>`).join('')}</div>
-    </section>`;
-}
-
-function signatureMarkup(entry) {
-  if (!entry.signatureTraits?.length) return '';
-  return `
-    <section class="content-section signature-section">
-      <div class="section-heading"><span>03</span><h2>Signature</h2></div>
-      ${entry.signatureTraits.map((trait) => `<blockquote>${escapeHtml(trait)}</blockquote>`).join('')}
+      <a class="menu-link" href="https://voodoobayou.com/menu/" target="_blank" rel="noopener noreferrer">Food menu ↗</a>
     </section>`;
 }
 
@@ -739,7 +796,7 @@ function relatedMarkup(related) {
   if (!related.length) return '';
   return `
     <section class="content-section related-section">
-      <div class="section-heading"><span>04</span><h2>Continue tasting</h2></div>
+      <div class="section-heading"><span>03</span><h2>Continue tasting</h2></div>
       <div class="related-rail">${related.map((entry) => `
         <button class="related-card" data-drink-id="${escapeAttribute(entry.id)}">
           <small>${escapeHtml(entry.category)}</small>
@@ -750,32 +807,34 @@ function relatedMarkup(related) {
 }
 
 function quickReadMarkup(entry) {
-  const tags = [...new Set([...(entry.whiskey?.displayTags || []), ...(entry.tags || []).map(humanize)])].slice(0, 8);
+  const tags = entry._flavors;
   return `
     <section class="quick-read">
       <p class="aside-label">At a glance</p>
       ${tags.length ? `<div class="quick-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
-      ${entry.strength?.confirmation && entry.strength.confirmation !== 'exact' ? `<div class="caveat-note"><strong>Strength varies</strong><p>${escapeHtml(entry.strength.note || humanize(entry.strength.confirmation))}</p></div>` : ''}
+      <div class="caveat-note"><strong>${entry.menu?.status === 'listed' ? 'Menu listed' : 'Not found on menu'}</strong><p>${entry.menu?.status === 'listed' ? 'Availability and exact bottle remain subject to confirmation.' : 'Retained reference. Absence from the online menu does not establish discontinuation.'}</p></div>
+      ${entry.strength?.note ? `<div class="caveat-note"><strong>Strength reference</strong><p>${escapeHtml(entry.strength.note)}</p></div>` : ''}
+      ${entry.ingredients?.length ? noteGroup('Menu ingredients', entry.ingredients) : ''}
     </section>`;
 }
 
 function researchBadgeMarkup(entry) {
   const confidence = entry.research?.confidence || 'Unrated';
-  const ambiguity = entry.research?.ambiguityStatus || 'Not specified';
   return `
-    <span class="research-badge research-badge--${confidence.toLowerCase()}">${escapeHtml(confidence)} confidence</span>
-    <span class="research-badge">${escapeHtml(ambiguity === 'Clear' ? 'Clear interpretation' : ambiguity)}</span>`;
+    <span class="research-badge research-badge--${escapeAttribute(confidence.toLowerCase())}">${escapeHtml(confidence)} confidence</span>`;
 }
 
 function researchFields(entry) {
   return [
     ['Profile level', entry.research?.profileLevel],
+    ['Reviewed', entry.research?.reviewedAt],
+    ['Tasting basis', entry.research?.tastingBasis],
     ['Source types', cleanSources(entry.research?.sourceTypesConsulted)],
     ['Conflicts', entry.research?.conflictsFound],
     ['Resolution', entry.research?.resolution],
     ['Source record', entry.sourceRecord?.displayName],
     ['Normalized from', entry.sourceRecord?.normalizedFrom],
-    ['Caveats', entry.research?.caveats?.map(humanize).join(', ')],
+    ['Caveats', entry.research?.caveats?.join(' ')],
   ].filter(([, value]) => value);
 }
 
@@ -788,15 +847,15 @@ function profileBadges(entry) {
   const badges = [];
   if (entry.subtype) badges.push(entry.subtype);
   if (entry.varietal) badges.push(entry.varietal);
-  badges.push(...(entry.whiskey?.displayTags || []));
-  if (entry.research?.ambiguityStatus && entry.research.ambiguityStatus !== 'Clear') badges.push(entry.research.ambiguityStatus);
+  badges.push(entry.research?.profileLevel || 'Reference profile');
   return [...new Set(badges)].slice(0, 5);
 }
 
 function cardTags(entry) {
-  const tags = [...(entry.whiskey?.displayTags || [])];
-  if (!tags.length && entry.research?.confidence) tags.push(`${entry.research.confidence} confidence`);
-  if (entry._hasCaveat) tags.push('Caveat');
+  const tags = [];
+  if (entry.menu?.status === 'not-found') tags.push('Not on retrieved menu');
+  else if (entry.research?.confidence === 'Low') tags.push('Confirm expression');
+  else tags.push('Reference profile');
   return tags;
 }
 
@@ -856,8 +915,13 @@ function isTypingTarget(target) {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
+}
+
+function safeUrl(value) {
+  try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : ''; }
+  catch { return ''; }
 }
 
 function escapeHtml(value) {
