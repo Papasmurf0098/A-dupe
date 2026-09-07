@@ -4,12 +4,12 @@ A drink reference for Voodoo Bayou, Palm Beach Gardens: tasting profiles, qualif
 
 ## September 2026 revision
 
-- 353 stored records, 352 distinct profiles after one duplicate is mapped to its canonical entry.
+- 359 stored records, 358 distinct profiles after one duplicate is mapped to its canonical entry.
 - Every record has a dated research review, scoped source links, and strength qualifications.
-- 15 records added from the retrieved menu; these are additions to this catalog, not confirmed new restaurant offerings.
-- 682 pairing suggestions across 341 visible profiles and 36 named dishes. Eleven unresolved bottles/flights remain unpaired.
+- 21 records added across the September 6–7 reviews, including Bourbon Peach Tea, Verdita, Gris-Gris Rita, Jameo’retto Sour, Blanche Devereaux Vol. 3 and Espresso Old Fashioned. Additions to this catalog do not establish the restaurant's launch dates.
+- 696 pairing suggestions across 347 visible profiles and 41 currently listed dishes. Eleven unresolved bottles/flights remain unpaired. Three superseded food records are retained for old links, with updated dish destinations.
 - Dish-first discovery, ingredient and accent-insensitive search, flavor filters, and menu-status filters.
-- Royal-purple textured surfaces, gold and emerald accents, glass filing tabs, real illustrative photography, and front-to-back profile motion.
+- Dark velvet-purple surfaces, higher-contrast glass filing tabs, gold and emerald accents, real illustrative photography, and front-to-back profile motion.
 - Saved profiles, recent history, deep links, sharing, random discovery, and compact/comfortable views.
 
 Read [the research audit](RESEARCH_AUDIT.md) for verification limits and corrections. Read [photo credits](ASSET_CREDITS.md) for sources and licenses. The photography does not depict the restaurant or certify individual drinks.
@@ -48,6 +48,8 @@ Tests cover data invariants, identity redirects, pairing references, qualified A
 - `tests/`: dependency-free regression tests.
 
 The old DOCX and parser are preserved as historical inputs. **Do not regenerate the current catalog with the legacy parser**: doing so would overwrite the reviewed profiles and pairings. Previous narrative values are provenance, not current evidence, and are not displayed as active tasting notes.
+
+`scripts/sync-menu-2026-09-07.mjs` records the repeatable September 7 menu corrections. It preserves historical cocktail IDs, adds distinct new recipes, migrates affected food pairings, and records source scope. Garden District Ceviche and seven other missing dishes are included; selecting a dish shows its menu components. The food roster remains selected pairings, not a complete reproduction of every side or children's item.
 
 ## Deployment
 

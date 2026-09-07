@@ -17,7 +17,7 @@ test('service worker refreshes online, resolves offline deep links and leaves ot
   let offline = false;
   const context = vm.createContext({
     self: { registration: { scope }, location: { origin: 'https://example.com' }, clients: { claim: async () => {} }, skipWaiting: async () => {}, addEventListener: (name, handler) => { listeners[name] = handler; } },
-    caches: { open: async () => cache, keys: async () => [`${prefix}old`, `${prefix}2026-09-06-v3`, 'another-app'], delete: async (key) => deleted.push(key) },
+    caches: { open: async () => cache, keys: async () => [`${prefix}old`, `${prefix}2026-09-07-v4`, 'another-app'], delete: async (key) => deleted.push(key) },
     fetch: async () => { if (offline) throw new Error('offline'); return new Response('fresh'); },
     URL, Response, Set,
   });

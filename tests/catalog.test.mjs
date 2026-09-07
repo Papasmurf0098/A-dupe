@@ -13,9 +13,9 @@ const find = (id) => entries.find((entry) => entry.id === id);
 
 test('catalog copies match and duplicate keeps a legacy route', () => {
   assert.equal(read('data/drinks.json'), read('drinks.json'));
-  assert.equal(payload.entries.length, 353);
-  assert.equal(entries.length, 352);
-  assert.equal(new Set(payload.entries.map((entry) => entry.id)).size, 353);
+  assert.equal(payload.entries.length, 359);
+  assert.equal(entries.length, 358);
+  assert.equal(new Set(payload.entries.map((entry) => entry.id)).size, 359);
   const duplicate = payload.entries.find((entry) => entry.duplicateOf);
   assert.ok(find(duplicate.duplicateOf).legacyIds.includes(duplicate.id));
   assert.ok(!find(duplicate.id));
@@ -23,7 +23,7 @@ test('catalog copies match and duplicate keeps a legacy route', () => {
 
 test('every record has scoped evidence, a review date and a strength qualification', () => {
   for (const entry of payload.entries) {
-    assert.equal(entry.research.reviewedAt, '2026-09-06', entry.id);
+    assert.ok(['2026-09-06', '2026-09-07'].includes(entry.research.reviewedAt), entry.id);
     assert.ok(entry.research.tastingBasis, entry.id);
     assert.ok(entry.research.sources.length, entry.id);
     assert.ok(entry.strength.confirmation, entry.id);
@@ -37,7 +37,8 @@ test('every record has scoped evidence, a review date and a strength qualificati
 
 test('pairings resolve to real menu records and uncertain identities stay unpaired', () => {
   const dishes = new Map(food.dishes.map((dish) => [dish.id, dish]));
-  assert.equal(dishes.size, 36);
+  assert.equal(dishes.size, 44);
+  assert.equal(food.dishes.filter((dish) => dish.status === 'listed').length, 41);
   let count = 0;
   for (const entry of entries) {
     assert.ok(entry.pairingReview.basis.includes('not restaurant endorsements'), entry.id);
@@ -45,12 +46,13 @@ test('pairings resolve to real menu records and uncertain identities stay unpair
     if (!pairs.length) assert.ok(entry.pairingReview.note, entry.id);
     for (const pair of pairs) {
       assert.equal(pair.name, dishes.get(pair.dishId)?.name, entry.id);
+      assert.equal(dishes.get(pair.dishId)?.status, 'listed', entry.id);
       assert.ok(pair.reason.length > 20, entry.id);
       assert.equal(pair.sourceUrl, food.sourceUrl, entry.id);
       count++;
     }
   }
-  assert.equal(count, 682);
+  assert.equal(count, 696);
   assert.equal(entries.filter((entry) => !entry._hasPairings).length, 11);
 });
 
@@ -75,7 +77,7 @@ test('ingredient-led drinks and unspecified wine vintages do not invent numeric 
 test('accent and punctuation search, dish filters and combined flavor filters work', () => {
   assert.equal(normalizeText('Crème & Blanton’s'), 'creme and blantons');
   assert.ok(filterCatalog(entries, { ...base, query: 'creme de menthe' }).some((entry) => entry.id === 'grasshopper'));
-  for (const dish of food.dishes) {
+  for (const dish of food.dishes.filter((dish) => dish.status === 'listed')) {
     const matches = filterCatalog(entries, { ...base, dish: dish.id });
     assert.ok(matches.length, dish.id);
     assert.ok(matches.every((entry) => entry.pairings.restaurant.some((pair) => pair.dishId === dish.id)));
@@ -93,7 +95,7 @@ test('saved/recent scopes and sorting preserve the input catalog', () => {
   const sorted = sortCatalog(entries, 'name');
   assert.notEqual(sorted, entries);
   assert.deepEqual(entries.map((entry) => entry.id), before);
-  assert.equal(deriveFacets(entries).familyCounts.All, 352);
+  assert.equal(deriveFacets(entries).familyCounts.All, 358);
   const related = getRelated(entries, entries[0]);
   assert.ok(related.length > 0 && related.length <= 6);
   assert.ok(related.every((entry) => entry.id !== id));
@@ -109,4 +111,29 @@ test('static app assets, accessible modal hooks and ingredient rendering are pre
   assert.ok(!app.includes('<blockquote>'));
   assert.ok(!/ChatGPT|Nightcap/.test(read('index.html') + app));
   assert.ok(read('styles.css').includes('prefers-reduced-motion'));
+});
+
+test('refreshed recipes are distinct, searchable and paired with current dishes', () => {
+  const tea = find('bourbon-peach-tea');
+  assert.ok(tea.ingredients.includes('peach tea syrup'));
+  assert.ok(!tea.ingredients.some((ingredient) => /pineapple|Horse Soldier/i.test(ingredient)));
+  assert.equal(find('depeache-mode').menu.status, 'not-found');
+  assert.equal(find('blanche-devereaux-vol-2').menu.status, 'not-found');
+  assert.ok(find('blanche-devereaux-vol-3').ingredients.includes('Luxardo Amaretto'));
+  assert.ok(!find('blanche-devereaux-vol-3').ingredients.includes('St-Germain'));
+  for (const id of ['bourbon-peach-tea', 'verdita', 'gris-gris-rita', 'jameoretto-sour', 'blanche-devereaux-vol-3', 'espresso-old-fashioned']) {
+    assert.equal(find(id).menu.status, 'listed');
+    assert.equal(find(id).strength.abv, undefined);
+  }
+  assert.ok(filterCatalog(entries, { ...base, query: 'peach tea', menu: 'listed' }).some((entry) => entry.id === tea.id));
+  assert.ok(filterCatalog(entries, { ...base, query: 'ceviche' }).some((entry) => entry.id === 'verdita'));
+  for (const id of ['membership-flight', 'private-barrel-flight', 'pappy-flight']) {
+    assert.equal(find(id).menu.status, 'listed');
+    assert.equal(find(id)._hasPairings, false);
+  }
+  const privateBarrel = find('blantons-private-barrel-old-fashioned');
+  assert.equal(privateBarrel.name, 'Voodoo Private Barrel Old Fashioned');
+  assert.ok(privateBarrel.ingredients[0].includes(' or '));
+  for (const dish of food.dishes.filter((dish) => dish.replacedBy)) assert.equal(food.dishes.find((next) => next.id === dish.replacedBy)?.status, 'listed');
+  for (const entry of entries) for (const pair of entry.pairings.restaurant) if (pair.dishId === 'cornbread') assert.ok(!/molasses/i.test(pair.reason));
 });
