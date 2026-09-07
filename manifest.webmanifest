@@ -3,7 +3,7 @@
   "short_name": "Voodoo",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#190a2b",
-  "theme_color": "#271044",
+  "background_color": "#10051c",
+  "theme_color": "#10051c",
   "description": "Drink profiles and Voodoo Bayou food pairings."
 }

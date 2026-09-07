@@ -1,5 +1,22 @@
 # Drink and pairing audit — September 6, 2026
 
+## September 7 follow-up — current menu corrections
+
+The [same location-linked menu](https://voodoobayou.com/menu/) returned refreshed content on September 7 after an initial retrieval still returned the older page. The newer version explicitly lists **Bourbon Peach Tea** and **Garden District Ceviche**. This resolves their omission; it does not establish the restaurant's precise menu-change date. The separate PBG endpoint remains unavailable.
+
+- Added six distinct cocktails: Bourbon Peach Tea, Verdita, Gris-Gris Rita, Jameo’retto Sour, Blanche Devereaux Vol. 3, and Espresso Old Fashioned (also labeled Carajillo).
+- Preserved DePeache Mode and Blanche Vol. 2 as historical recipes. They are not aliases for the new drinks. Pimp Chalice and Voodoo Child were also absent from the refreshed listing and are marked accordingly, without asserting discontinuation.
+- Corrected the existing private-barrel Old Fashioned record to the menu's alternative base choices: Blanton’s, Jefferson Ocean **or** Woodford Double Oak. Kept its original ID for bookmarks.
+- Restored the three named flights to menu-listed status; their compositions remain unspecified, so flavor-led pairings remain withheld.
+- Added Garden District Ceviche, Corn Ribs, Cajun Crab Hushpuppies, Salmon Tartare au Citron, Roasted Peach Salad, Frenchmen Fried Oysters, Voodoo Krewe Snapper, and Holy Sunday.
+- Moved pairings away from the unlisted Stuffed Mac & Cheese, Shrimp & Grits and old NOLA-remoulade Fried Oysters recipes. Their historical dish links resolve to separate current dishes, whose ingredients are shown explicitly.
+- Removed molasses from cornbread pairing reasons. Watermelon Salad remains a name-only brunch side; the old full-salad dressing is not asserted for the current side.
+- Deepened the interface to velvet purple, darkened the card and profile surfaces, and retained bright gold/green focus and selection accents.
+
+Current totals: **359 stored drinks, 358 visible profiles, 696 suggestions across 347 paired profiles, and 41 active dishes**. Three historical dishes remain in the data but are excluded from the active picker. Eleven unresolved drink identities/flights remain unpaired. The September 6 figures below describe the earlier review, not these current totals.
+
+New cocktail notes remain ingredient-based expectations, with no invented finished ABV. Ceviche uses the menu's unspecified fresh catch; no fish species is invented. The menu's ambiguous ingredient terms (orchard citrus, citrus sherbet and aloe liqueur) remain qualified. Pairings remain editorial suggestions.
+
 ## Scope and limitations
 
 The [Palm Beach Gardens location page](https://voodoobayou.com/palmbeachgardens/) linked its menu control to the [retrieved restaurant menu](https://voodoobayou.com/menu/). That location-linked page is the venue source used for this revision.

@@ -1,16 +1,28 @@
 {
-  "reviewedAt": "2026-09-06",
+  "reviewedAt": "2026-09-07",
   "venue": "Voodoo Bayou",
   "sourceUrl": "https://voodoobayou.com/menu/",
-  "scope": "Menu linked directly from the Palm Beach Gardens location page. The separate PBG menu endpoint could not be retrieved.",
+  "scope": "Refreshed menu linked from Palm Beach Gardens; current items are separated from historical recipes. The separate PBG endpoint remains unavailable.",
   "dishes": [
     {
       "id": "cornbread",
       "name": "Famous Cornbread",
-      "components": "Honey butter and molasses",
+      "components": "Cornbread with honey butter",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "menuHistory": [
+        {
+          "replacedAt": "2026-09-07",
+          "name": "Famous Cornbread",
+          "menu": {},
+          "ingredients": [],
+          "components": "Honey butter and molasses",
+          "service": "Dinner"
+        }
+      ],
+      "note": "The refreshed menu no longer specifies molasses."
     },
     {
       "id": "biscuits",
@@ -18,7 +30,8 @@
       "components": "Honey butter and jalapeño–pear jam",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "gator",
@@ -26,7 +39,8 @@
       "components": "Fried gator, onion, charred lemon and chipotle aioli",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "wings",
@@ -34,7 +48,8 @@
       "components": "Buffalo sauce, blue cheese and celery",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "eggs",
@@ -42,7 +57,8 @@
       "components": "Caviar, black truffle, Dijon, lemon oil and chive",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "tomato",
@@ -50,7 +66,8 @@
       "components": "Smoked pork belly, pimento cheese and tomato jam",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "bbq-shrimp",
@@ -58,7 +75,8 @@
       "components": "Garlic, shallot, NOLA BBQ sauce and grilled bread",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "mac",
@@ -66,7 +84,20 @@
       "components": "Chipotle cheddar, smoked pork belly and crema",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "not-found",
+      "menuHistory": [
+        {
+          "replacedAt": "2026-09-07",
+          "name": "Stuffed Mac & Cheese",
+          "menu": {},
+          "ingredients": [],
+          "components": "Chipotle cheddar, smoked pork belly and crema",
+          "service": "Dinner"
+        }
+      ],
+      "replacedBy": "corn-ribs",
+      "note": "Not found on the refreshed menu. Kept for old dish links; the replacement has its own recipe."
     },
     {
       "id": "gumbo",
@@ -74,7 +105,8 @@
       "components": "Shrimp, andouille, chicken, okra and rice",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "caesar",
@@ -82,7 +114,8 @@
       "components": "Leafy greens, capers, pistachio and Parmesan",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "pear",
@@ -90,15 +123,28 @@
       "components": "Asian pear, candied pecan, black cherry, goat cheese and balsamic",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "watermelon",
       "name": "Watermelon Salad",
-      "components": "Feta, fennel, pistachio vinaigrette and citronette",
-      "service": "Dinner",
+      "components": "Listed as a brunch side; current ingredients are not specified.",
+      "service": "Brunch",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "menuHistory": [
+        {
+          "replacedAt": "2026-09-07",
+          "name": "Watermelon Salad",
+          "menu": {},
+          "ingredients": [],
+          "components": "Feta, fennel, pistachio vinaigrette and citronette",
+          "service": "Dinner"
+        }
+      ],
+      "note": "Do not assume the previous full salad’s feta, fennel or vinaigrette recipe."
     },
     {
       "id": "fried-chicken",
@@ -106,7 +152,8 @@
       "components": "Fried chicken with hot honey and a buttermilk biscuit",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "waffles",
@@ -114,7 +161,8 @@
       "components": "Cheddar–cornbread waffle and bourbon maple syrup",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "grits",
@@ -122,7 +170,20 @@
       "components": "Shrimp, grits, tomato and couvillon sauce",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "not-found",
+      "menuHistory": [
+        {
+          "replacedAt": "2026-09-07",
+          "name": "Shrimp & Grits",
+          "menu": {},
+          "ingredients": [],
+          "components": "Shrimp, grits, tomato and couvillon sauce",
+          "service": "Dinner"
+        }
+      ],
+      "replacedBy": "voodoo-krewe-snapper",
+      "note": "Not found on the refreshed menu. Kept for old dish links; the replacement has its own recipe."
     },
     {
       "id": "etouffee",
@@ -130,7 +191,8 @@
       "components": "Spicy Creole sauce, trinity vegetables and rice",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "jambalaya",
@@ -138,7 +200,8 @@
       "components": "Shrimp, andouille, chicken, tasso, tomato and rice",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "mushroom",
@@ -146,7 +209,8 @@
       "components": "Mushroom pasta with herbs and Grana Padano",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "carbonara",
@@ -154,7 +218,8 @@
       "components": "Rigatoni, smoked pork belly, egg, Parmesan and peas",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "roast-chicken",
@@ -162,7 +227,8 @@
       "components": "Bourbon jus, herb butter, rice and smoky collards",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "redfish",
@@ -170,7 +236,8 @@
       "components": "Chili butter, charred lemon, rice and braised green beans",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "salmon",
@@ -178,7 +245,8 @@
       "components": "Creole mustard sauce and vegetable rice",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "crab",
@@ -186,7 +254,8 @@
       "components": "Creole mustard sauce, succotash and frisée",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "filet",
@@ -194,7 +263,8 @@
       "components": "Wood-fired beef with bourbon jus and chili butter",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "ribeye",
@@ -202,7 +272,8 @@
       "components": "Bone-in beef with bourbon jus and chili butter",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "raw-oysters",
@@ -210,7 +281,8 @@
       "components": "Daily oyster selection with accompaniments",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "wood-oysters",
@@ -218,7 +290,8 @@
       "components": "Chili butter and garlic bread",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "fried-oysters",
@@ -226,7 +299,20 @@
       "components": "NOLA remoulade and peppers on the dinner menu",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "not-found",
+      "menuHistory": [
+        {
+          "replacedAt": "2026-09-07",
+          "name": "Fried Oysters",
+          "menu": {},
+          "ingredients": [],
+          "components": "NOLA remoulade and peppers on the dinner menu",
+          "service": "Dinner"
+        }
+      ],
+      "replacedBy": "frenchmen-fried-oysters",
+      "note": "Not found on the refreshed menu. Kept for old dish links; the replacement has its own recipe."
     },
     {
       "id": "burger",
@@ -234,7 +320,8 @@
       "components": "Beef, cheddar, Cajun aioli and pickles",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "beignets",
@@ -242,7 +329,8 @@
       "components": "Sweet fried pastry",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "chocolate",
@@ -250,7 +338,8 @@
       "components": "Chocolate, hazelnut, brownie and coffee ice cream",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "date-cake",
@@ -258,7 +347,8 @@
       "components": "Warm date cake, pecan toffee and vanilla ice cream",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "elvis",
@@ -266,7 +356,8 @@
       "components": "Banana bread pudding, peanut butter caramel and vanilla cream",
       "service": "Dinner",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "steak-eggs",
@@ -274,7 +365,8 @@
       "components": "Blackened sirloin, eggs, potatoes and bourbon jus",
       "service": "Brunch",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "gravy",
@@ -282,7 +374,8 @@
       "components": "Buttermilk biscuits and smoky andouille gravy",
       "service": "Brunch",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
     },
     {
       "id": "crab-benedict",
@@ -290,7 +383,94 @@
       "components": "Crab cake, fried green tomato, poached eggs and Cajun hollandaise",
       "service": "Brunch",
       "sourceUrl": "https://voodoobayou.com/menu/",
-      "checkedAt": "2026-09-06"
+      "checkedAt": "2026-09-07",
+      "status": "listed"
+    },
+    {
+      "id": "garden-district-ceviche",
+      "name": "Garden District Ceviche",
+      "components": "Fresh catch with citrus tomato water, small heirloom tomatoes, corn, red onion, jalapeños and crisp shallots",
+      "service": "Lunch / Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07"
+    },
+    {
+      "id": "corn-ribs",
+      "name": "Corn Ribs",
+      "components": "Chipotle cheddar sauce, smoked pork belly, crispy garlic, Mexican crema and green onion",
+      "service": "Lunch / Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07",
+      "aliases": [
+        "SCorn Ribs"
+      ]
+    },
+    {
+      "id": "cajun-crab-hushpuppies",
+      "name": "Cajun Crab Hushpuppies",
+      "components": "Lump crab in a Cajun-seasoned beer batter with remoulade",
+      "service": "Lunch / Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07"
+    },
+    {
+      "id": "salmon-tartare",
+      "name": "Salmon Tartare au Citron",
+      "components": "Salmon, shallots, capers, relish and parsley with white-wine vinaigrette, lemon crème fraîche and kettle chips",
+      "service": "Lunch / Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07"
+    },
+    {
+      "id": "roasted-peach-salad",
+      "name": "Roasted Peach Salad",
+      "components": "Roasted peach, arugula, whipped ricotta, cornbread crumble, pink peppercorn, candied pecans and lemon-thyme vinaigrette",
+      "service": "Lunch / Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07"
+    },
+    {
+      "id": "frenchmen-fried-oysters",
+      "name": "Frenchmen Fried Oysters",
+      "components": "Fried oysters with compressed honeydew, white balsamic vinegar and green goddess",
+      "service": "Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07",
+      "aliases": [
+        "Frenchman Fried Oysters"
+      ]
+    },
+    {
+      "id": "voodoo-krewe-snapper",
+      "name": "Voodoo Krewe Snapper",
+      "components": "Snapper with Creole sauce, braised green beans and crawfish-cornbread stuffing",
+      "service": "Lunch / Dinner",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07"
+    },
+    {
+      "id": "holy-sunday",
+      "name": "Holy Sunday",
+      "components": "Warm chocolate-chip cookie with butter-pecan, cookies-and-cream and coffee ice creams, brownie pieces, beignets, wafers and graham crumbs",
+      "service": "Dessert",
+      "sourceUrl": "https://voodoobayou.com/menu/",
+      "checkedAt": "2026-09-07",
+      "status": "listed",
+      "addedAt": "2026-09-07"
     }
   ]
 }

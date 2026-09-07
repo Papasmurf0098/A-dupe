@@ -60,7 +60,8 @@ async function boot() {
     state.entries = normalizeCatalog(await response.json());
     const foodResponse = await fetch('./data/food.json');
     if (!foodResponse.ok) throw new Error('Food menu unavailable');
-    state.food = (await foodResponse.json()).dishes;
+    const dishes = (await foodResponse.json()).dishes;
+    state.food = dishes.filter((dish) => dish.status !== 'not-found').map((dish) => ({ ...dish, legacyIds: dishes.filter((old) => old.replacedBy === dish.id).map((old) => old.id) })).sort((a, b) => a.name.localeCompare(b.name));
     const canonicalId = (id) => state.entries.find((entry) => entry.id === id || entry.legacyIds.includes(id))?.id;
     state.favorites = new Set([...state.favorites].map(canonicalId).filter(Boolean));
     state.recent = [...new Set(state.recent.map(canonicalId).filter(Boolean))];
@@ -141,6 +142,7 @@ function renderShell() {
           <div><label for="dishSelect">Pair with</label><select id="dishSelect" class="select-control"><option value="">Any dish</option>${state.food.map((dish) => `<option value="${escapeAttribute(dish.id)}">${escapeHtml(dish.name)}${dish.service === 'Brunch' ? ' · Brunch' : ''}</option>`).join('')}</select></div>
           <div><label for="flavorSelect">Flavor</label><select id="flavorSelect" class="select-control"><option value="">Any profile</option>${Object.keys(FLAVOR_FILTERS).map((flavor) => `<option>${flavor}</option>`).join('')}</select></div>
           <a class="menu-link" href="https://voodoobayou.com/menu/" target="_blank" rel="noopener noreferrer">Voodoo Bayou menu ↗</a>
+          <div id="selectedDish" class="selected-dish" hidden></div>
         </section>
 
         <section id="filterDrawer" class="filter-drawer" aria-hidden="true" inert>
@@ -189,7 +191,7 @@ function renderShell() {
 
         <section id="catalogDeck" class="catalog-deck" aria-label="Drink profiles"></section>
         <div id="loadMoreWrap" class="load-more-wrap"></div>
-        <footer class="library-footer"><span>Location-linked menu checked September 6, 2026</span><a href="RESEARCH_AUDIT.md">Menu scope</a><a href="https://voodoobayou.com/palmbeachgardens/" target="_blank" rel="noopener noreferrer">Palm Beach Gardens ↗</a><a href="ASSET_CREDITS.md">Photo credits</a></footer>
+        <footer class="library-footer"><span>Location-linked menu checked September 7, 2026</span><a href="RESEARCH_AUDIT.md">Menu scope</a><a href="https://voodoobayou.com/palmbeachgardens/" target="_blank" rel="noopener noreferrer">Palm Beach Gardens ↗</a><a href="ASSET_CREDITS.md">Photo credits</a></footer>
       </section>
     </main>
 
@@ -398,6 +400,10 @@ function renderAll({ fromHistory = false } = {}) {
 function renderLibrary() {
   document.body.dataset.family = state.family;
   document.body.dataset.density = state.density;
+  const dish = state.food.find((item) => item.id === state.dish);
+  const dishDetail = document.querySelector('#selectedDish');
+  dishDetail.hidden = !dish;
+  dishDetail.innerHTML = dish ? `<strong>${escapeHtml(dish.name)}</strong><p>${escapeHtml(dish.components)}</p><small>${escapeHtml(dish.service)} · Menu checked ${escapeHtml(dish.checkedAt)}</small>` : '';
   renderFamilyTabs();
   renderCategories();
   renderStageHeader();
@@ -714,7 +720,7 @@ function hydrateFromUrl() {
   state.selectedId = params.get('drink');
   const legacyMatch = state.entries.find((entry) => entry.legacyIds.includes(state.selectedId));
   if (legacyMatch) state.selectedId = legacyMatch.id;
-  state.dish = state.food.some((dish) => dish.id === params.get('dish')) ? params.get('dish') : '';
+  state.dish = state.food.find((dish) => dish.id === params.get('dish') || dish.legacyIds.includes(params.get('dish')))?.id || '';
   state.flavor = Object.hasOwn(FLAVOR_FILTERS, params.get('flavor')) ? params.get('flavor') : '';
   state.menu = ['listed', 'not-found'].includes(params.get('menu')) ? params.get('menu') : '';
   state.visible = PAGE_STEP;
