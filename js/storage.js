@@ -25,8 +25,8 @@ export function pushRecent(list, id) {
 export function loadPreferences() {
   const raw = read(KEYS.preferences, {});
   return {
-    sort: raw.sort || 'name',
-    density: raw.density === 'compact' ? 'compact' : 'comfortable',
+    sort: ['name', 'name-desc', 'family', 'confidence', 'original'].includes(raw?.sort) ? raw.sort : 'name',
+    density: raw?.density === 'compact' ? 'compact' : 'comfortable',
   };
 }
 

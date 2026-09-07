@@ -1,9 +1,9 @@
 {
-  "name": "Nightcap Library",
-  "short_name": "Nightcap",
+  "name": "Voodoo Drink Library II",
+  "short_name": "Voodoo",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#090a0c",
-  "theme_color": "#090a0c",
-  "description": "A tasting-first drink reference library."
+  "background_color": "#190a2b",
+  "theme_color": "#271044",
+  "description": "Drink profiles and Voodoo Bayou food pairings."
 }
